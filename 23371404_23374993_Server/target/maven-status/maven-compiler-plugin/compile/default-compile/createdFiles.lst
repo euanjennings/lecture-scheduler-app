@@ -1,0 +1,9 @@
+com\mycompany\server\view\ResponseFormatter.class
+com\mycompany\server\exception\IncorrectActionException.class
+com\mycompany\server\controller\CommandProcessor.class
+module-info.class
+com\mycompany\server\controller\LectureController.class
+com\mycompany\server\network\ClientHandler.class
+com\mycompany\server\model\ScheduleManager.class
+com\mycompany\server\model\Lecture.class
+com\mycompany\server\network\ServerMain.class
