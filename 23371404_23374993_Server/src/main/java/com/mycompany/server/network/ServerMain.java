@@ -1,5 +1,8 @@
 package com.mycompany.server.network;
 
+import com.mycompany.server.controller.LectureController;
+import com.mycompany.server.model.ScheduleManager;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -11,11 +14,15 @@ public class ServerMain {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("Server started on port " + PORT);
 
+            // Shared MVC objects
+            ScheduleManager sharedSchedule = new ScheduleManager();
+            LectureController sharedController = new LectureController(sharedSchedule);
+
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Client connected: " + clientSocket.getInetAddress());
 
-                ClientHandler clientHandler = new ClientHandler(clientSocket);
+                ClientHandler clientHandler = new ClientHandler(clientSocket, sharedController);
                 new Thread(clientHandler).start();
             }
         } catch (IOException e) {
@@ -24,7 +31,6 @@ public class ServerMain {
     }
 
     public static void main(String[] args) {
-        ServerMain server = new ServerMain();
-        server.startServer();
+        new ServerMain().startServer();
     }
 }

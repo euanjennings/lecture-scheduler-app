@@ -35,25 +35,22 @@ public class LectureController {
     }
 
     public String handleRequest(String action, String date, String time, String room, String module) {
-        // Log the request (if not Display)
         if (!action.equals("Display")) {
             logRequest(action, date, time, room, module);
         }
-        
-        // Send the request to the model
+
         String response = model.sendRequest(action, date, time, room, module);
-        
-        // Handle the response
+
         if (action.equals("STOP") && response.equals("TERMINATE")) {
             mainView.updateResponseArea("Connection closed.\n");
             model.closeConnection();
         } else if (!action.equals("Display")) {
             mainView.updateResponseArea("[SERVER RESPONSE]\n" + response + "\n");
         }
-        
+
         return response;
     }
-    
+
     private void logRequest(String action, String date, String time, String room, String module) {
         String formattedMessage = String.format(
             "[CLIENT REQUEST]\nAction: %s\nDate: %s\nTime: %s\nRoom: %s\nModule: %s\n",
@@ -70,8 +67,13 @@ public class LectureController {
     public List<Lecture> getLectures(String response) {
         return model.getLectures(response);
     }
-    
+
     public void updateResponseArea(String message) {
         mainView.updateResponseArea(message);
+    }
+
+    public void requestEarlyShift() {
+        String response = handleRequest("Early", "", "", "", "");
+        mainView.updateResponseArea(response);
     }
 }

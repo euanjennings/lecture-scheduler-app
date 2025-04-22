@@ -1,53 +1,81 @@
+// ScheduleManager.java
 package com.mycompany.server.model;
 
-import com.mycompany.server.model.Lecture;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalTime;
+import java.util.*;
 
 public class ScheduleManager {
-    private Map<String, Lecture> schedule; // Store lectures in a HashMap
+    private final Map<String, Lecture> schedule = new HashMap<>();
 
-    public ScheduleManager() {
-        schedule = new HashMap<>();
-    }
-
-    public String addLecture(Lecture lecture) {
-        // Check for scheduling clashes
+    public synchronized String addLecture(Lecture lecture) {
         if (schedule.containsKey(lecture.getKey())) {
             return "Error: Lecture clash detected.";
         }
-
-        // Add the lecture to the schedule
         schedule.put(lecture.getKey(), lecture);
         return "Lecture added successfully.";
     }
 
-    public String removeLecture(Lecture lecture) {
-        if (schedule.remove(lecture.getKey()) != null) {
-            return "Lecture removed successfully.";
-        } else {
-            return "Error: Lecture not found.";
-        }
+    public synchronized String removeLecture(Lecture lecture) {
+        return (schedule.remove(lecture.getKey()) != null)
+                ? "Lecture removed successfully."
+                : "Error: Lecture not found.";
     }
 
-    public List<Lecture> getSchedule() {
-        return new ArrayList<>(schedule.values()); // Return a list of all lectures
+    public synchronized List<Lecture> getSchedule() {
+        return new ArrayList<>(schedule.values());
     }
 
-    public String displaySchedule() {
-        if (schedule.isEmpty()) {
-            return "No lectures scheduled.";
+    public String shiftLecturesToMorning() {
+        Map<String, List<Lecture>> byDay = new HashMap<>();
+        List<Thread> threads = new ArrayList<>();
+
+        synchronized (this) {
+            for (Lecture lecture : schedule.values()) {
+                String date = lecture.getDate();
+                byDay.putIfAbsent(date, new ArrayList<>());
+                byDay.get(date).add(lecture);
+            }
         }
 
-        StringBuilder sb = new StringBuilder();
-        for (Lecture lecture : schedule.values()) {
-            sb.append(lecture.getDate()).append(",")
-              .append(lecture.getTime()).append(",")
-              .append(lecture.getRoomNumber()).append(",")
-              .append(lecture.getModuleName()).append(";");
+        for (String date : byDay.keySet()) {
+            Thread t = new Thread(() -> shiftDayLectures(date, byDay.get(date)));
+            threads.add(t);
+            t.start();
         }
-        return sb.toString();
+
+        for (Thread t : threads) {
+            try { t.join(); } catch (InterruptedException ignored) {}
+        }
+
+        return "Lectures rescheduled to earlier time slots where available.";
+    }
+
+    private synchronized void shiftDayLectures(String date, List<Lecture> lectures) {
+        Set<String> usedTimes = new HashSet<>();
+        for (Lecture l : lectures) {
+            usedTimes.add(l.getTime());
+        }
+
+        List<Lecture> moved = new ArrayList<>();
+        for (Lecture l : lectures) {
+            String oldKey = l.getKey();
+            int originalHour = Integer.parseInt(l.getTime().split(":")[0]);
+            int newHour = 9;
+
+            while (newHour < originalHour) {
+                String newTime = String.format("%02d:00", newHour);
+                String newKey = date + "-" + newTime + "-" + l.getRoomNumber();
+
+                if (!schedule.containsKey(newKey) && !usedTimes.contains(newTime)) {
+                    schedule.remove(oldKey);
+                    Lecture newLecture = new Lecture(date, newTime, l.getRoomNumber(), l.getModuleName());
+                    schedule.put(newKey, newLecture);
+                    usedTimes.add(newTime);
+                    moved.add(newLecture);
+                    break;
+                }
+                newHour++;
+            }
+        }
     }
 }

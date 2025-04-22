@@ -1,6 +1,8 @@
 package com.mycompany.server.network;
 
 import com.mycompany.server.controller.CommandProcessor;
+import com.mycompany.server.controller.LectureController;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -13,9 +15,9 @@ public class ClientHandler implements Runnable {
     private BufferedReader in;
     private PrintWriter out;
 
-    public ClientHandler(Socket socket) {
+    public ClientHandler(Socket socket, LectureController controller) {
         this.clientSocket = socket;
-        this.commandProcessor = new CommandProcessor();
+        this.commandProcessor = new CommandProcessor(controller); // Injected
     }
 
     @Override
@@ -25,17 +27,11 @@ public class ClientHandler implements Runnable {
             out = new PrintWriter(clientSocket.getOutputStream(), true);
 
             String clientMessage;
-            while (true) {
-                clientMessage = in.readLine();
-                if (clientMessage == null) {
-                    System.out.println("Client disconnected.");
-                    break;
-                }
-
+            while ((clientMessage = in.readLine()) != null) {
                 String response = commandProcessor.processCommand(clientMessage);
                 out.println(response);
-                
-                if (response.equals("TERMINATE")) {
+
+                if ("TERMINATE".equals(response)) {
                     System.out.println("Client requested termination.");
                     break;
                 }
