@@ -6,4 +6,5 @@ com\mycompany\server\controller\LectureController.class
 com\mycompany\server\network\ClientHandler.class
 com\mycompany\server\model\ScheduleManager.class
 com\mycompany\server\model\Lecture.class
+com\mycompany\server\service\LectureProcessingService.class
 com\mycompany\server\network\ServerMain.class

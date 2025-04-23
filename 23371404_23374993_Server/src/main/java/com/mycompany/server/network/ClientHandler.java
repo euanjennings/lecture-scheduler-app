@@ -30,6 +30,7 @@ public class ClientHandler implements Runnable {
             while ((clientMessage = in.readLine()) != null) {
                 String response = commandProcessor.processCommand(clientMessage);
                 out.println(response);
+                
 
                 if ("TERMINATE".equals(response)) {
                     System.out.println("Client requested termination.");
