@@ -2,6 +2,7 @@ package com.mycompany.client.view;
 
 import com.mycompany.client.controller.LectureController;
 import com.mycompany.client.model.LectureModel;
+import com.mycompany.client.model.Lecture;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -10,7 +11,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane; // Import for GridPane
 import javafx.stage.Stage;
+import java.util.List;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -20,6 +23,7 @@ public class ClientMainView extends Application implements ClientView {
     private LectureController controller;
     private TextArea responseArea;
     private Socket socket;
+    private GridPane calendarGrid; // Declare the calendarGrid as a GridPane
 
     private final ObservableList<String> roomList = FXCollections.observableArrayList(
         Arrays.asList("A0049", "A0050", "A0060A", "A0060B", "A0060C", "A1050", "A1051", "A1052", "A1053", "A1054", "A1055",
@@ -56,6 +60,11 @@ public class ClientMainView extends Application implements ClientView {
     }
 
     private void setupUI(Stage primaryStage) {
+        // Initialize the calendarGrid as a new GridPane
+        calendarGrid = new GridPane();
+        calendarGrid.setHgap(10);  // Optional: set horizontal gap between cells
+        calendarGrid.setVgap(10);  // Optional: set vertical gap between cells
+
         Button addButton = new Button("Add");
         Button removeButton = new Button("Remove");
         Button displayButton = new Button("Display");
@@ -69,7 +78,7 @@ public class ClientMainView extends Application implements ClientView {
         VBox mainLayout = new VBox(10);
         mainLayout.getChildren().addAll(
             addButton, removeButton, displayButton, earlyButton,
-            otherButton, stopButton, responseArea
+            otherButton, stopButton, calendarGrid, responseArea
         );
 
         addButton.setOnAction(e -> controller.openAddView());
@@ -88,6 +97,16 @@ public class ClientMainView extends Application implements ClientView {
     @Override
     public void updateResponseArea(String message) {
         responseArea.appendText(message + "\n");
+    }
+
+    public void displayLectures(List<Lecture> lectures) {
+        calendarGrid.getChildren().clear();
+        int row = 0;
+        for (Lecture lec : lectures) {
+            // Assuming LectureCell is a UI component to represent each lecture
+            LectureCell cell = new LectureCell(lec, controller);
+            calendarGrid.add(cell, 0, row++);
+        }
     }
 
     @Override

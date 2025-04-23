@@ -1,4 +1,5 @@
 package com.mycompany.client.controller;
+import com.mycompany.client.view.RescheduleView;
 
 import com.mycompany.client.model.Lecture;
 import com.mycompany.client.model.LectureModel;
@@ -75,5 +76,17 @@ public class LectureController {
     public void requestEarlyShift() {
         String response = handleRequest("Early", "", "", "", "");
         mainView.updateResponseArea(response);
+    }
+    
+    public void openRescheduleView(Lecture lecture) {
+    RescheduleView view = new RescheduleView(this, lecture);
+    mainView.show();
+}
+
+/** Re-fetches the schedule from the server and re-renders it */
+    public void refreshSchedule() {
+    String response = model.sendRequest("Display", "", "", "", "");
+    List<Lecture> lectures = model.getLectures(response);
+    mainView.displayLectures(lectures);
     }
 }

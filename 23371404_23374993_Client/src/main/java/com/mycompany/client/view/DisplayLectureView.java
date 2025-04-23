@@ -198,18 +198,8 @@ public class DisplayLectureView extends Stage implements ClientView {
         GridPane.setFillHeight(eventBox, true);
 
         eventBox.setOnMouseClicked(e -> {
-            boolean confirmed = showConfirmationDialog(lecture);
-            if (confirmed) {
-                String response = controller.handleRequest(
-                        "Remove",
-                        lecture.getDate(),
-                        lecture.getTime(),
-                        lecture.getRoomNumber(),
-                        lecture.getModuleName()
-                );
-                controller.updateResponseArea(response);
-                updateDisplay(LocalDate.parse(lecture.getDate()));
-            }
+            showLectureOptionsDialog(lecture);
+
         });
 
         return eventBox;
@@ -223,15 +213,42 @@ public class DisplayLectureView extends Stage implements ClientView {
         return label;
     }
 
-    private boolean showConfirmationDialog(Lecture lecture) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Remove Lecture");
-        alert.setHeaderText("Are you sure you want to remove this lecture?");
-        alert.setContentText(String.format("Module: %s\nDate: %s\nTime: %s\nRoom: %s",
-                lecture.getModuleName(), lecture.getDate(), lecture.getTime(), lecture.getRoomNumber()));
+    private void showLectureOptionsDialog(Lecture lecture) {
+    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+    alert.setTitle("Lecture Options");
+    alert.setHeaderText("Choose an option for this lecture:");
+    alert.setContentText(String.format("Module: %s\nDate: %s\nTime: %s\nRoom: %s",
+            lecture.getModuleName(), lecture.getDate(), lecture.getTime(), lecture.getRoomNumber()));
 
-        return alert.showAndWait().filter(response -> response == ButtonType.OK).isPresent();
+    ButtonType removeButton = new ButtonType("Remove");
+    ButtonType rescheduleButton = new ButtonType("Reschedule");
+    ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+    alert.getButtonTypes().setAll(removeButton, rescheduleButton, cancelButton);
+
+    Optional<ButtonType> result = alert.showAndWait();
+
+    if (result.isPresent()) {
+        if (result.get() == removeButton) {
+            String response = controller.handleRequest(
+                    "Remove",
+                    lecture.getDate(),
+                    lecture.getTime(),
+                    lecture.getRoomNumber(),
+                    lecture.getModuleName()
+            );
+            controller.updateResponseArea(response);
+            updateDisplay(LocalDate.parse(lecture.getDate()));
+
+        } else if (result.get() == rescheduleButton) {
+            // Call your reschedule logic here:
+            new RescheduleView(controller, lecture).show();
+        }
+        // Cancel does nothing
     }
+}
+
+    
 
     @Override
     public void updateResponseArea(String message) {

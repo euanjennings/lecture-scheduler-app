@@ -1,4 +1,5 @@
 com\mycompany\client\view\ClientView.class
+com\mycompany\client\view\RescheduleView.class
 com\mycompany\client\view\DisplayLectureView.class
 com\mycompany\client\view\DisplayLectureView$2$1.class
 com\mycompany\client\model\Lecture.class
@@ -12,6 +13,7 @@ com\mycompany\client\view\RemoveLectureView$1.class
 com\mycompany\client\model\LectureService.class
 module-info.class
 com\mycompany\client\view\AddLectureView$1.class
+com\mycompany\client\view\LectureCell.class
 com\mycompany\client\view\ClientMainView.class
 com\mycompany\client\view\RemoveLectureView.class
 com\mycompany\client\view\AddLectureView.class

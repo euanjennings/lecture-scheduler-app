@@ -1,10 +1,12 @@
-C:\Users\seanw\Downloads\lecture-scheduler-app-main\lecture-scheduler-app-main\23371404_23374993_Client\src\main\java\module-info.java
-C:\Users\seanw\Downloads\lecture-scheduler-app-main\lecture-scheduler-app-main\23371404_23374993_Client\src\main\java\com\mycompany\client\model\LectureModel.java
+C:\Users\seanw\Downloads\lecture-scheduler-app-main\lecture-scheduler-app-main\23371404_23374993_Client\src\main\java\com\mycompany\client\view\RescheduleView.java
 C:\Users\seanw\Downloads\lecture-scheduler-app-main\lecture-scheduler-app-main\23371404_23374993_Client\src\main\java\com\mycompany\client\controller\LectureController.java
 C:\Users\seanw\Downloads\lecture-scheduler-app-main\lecture-scheduler-app-main\23371404_23374993_Client\src\main\java\com\mycompany\client\view\AddLectureView.java
+C:\Users\seanw\Downloads\lecture-scheduler-app-main\lecture-scheduler-app-main\23371404_23374993_Client\src\main\java\module-info.java
+C:\Users\seanw\Downloads\lecture-scheduler-app-main\lecture-scheduler-app-main\23371404_23374993_Client\src\main\java\com\mycompany\client\model\LectureModel.java
 C:\Users\seanw\Downloads\lecture-scheduler-app-main\lecture-scheduler-app-main\23371404_23374993_Client\src\main\java\com\mycompany\client\model\LectureService.java
 C:\Users\seanw\Downloads\lecture-scheduler-app-main\lecture-scheduler-app-main\23371404_23374993_Client\src\main\java\com\mycompany\client\view\RemoveLectureView.java
 C:\Users\seanw\Downloads\lecture-scheduler-app-main\lecture-scheduler-app-main\23371404_23374993_Client\src\main\java\com\mycompany\client\view\DisplayLectureView.java
+C:\Users\seanw\Downloads\lecture-scheduler-app-main\lecture-scheduler-app-main\23371404_23374993_Client\src\main\java\com\mycompany\client\view\LectureCell.java
 C:\Users\seanw\Downloads\lecture-scheduler-app-main\lecture-scheduler-app-main\23371404_23374993_Client\src\main\java\com\mycompany\client\model\Lecture.java
 C:\Users\seanw\Downloads\lecture-scheduler-app-main\lecture-scheduler-app-main\23371404_23374993_Client\src\main\java\com\mycompany\client\model\ModelException.java
 C:\Users\seanw\Downloads\lecture-scheduler-app-main\lecture-scheduler-app-main\23371404_23374993_Client\src\main\java\com\mycompany\client\view\ClientMainView.java
