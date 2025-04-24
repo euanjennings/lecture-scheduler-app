@@ -45,7 +45,7 @@ public class AddLectureView extends Stage implements ClientView {
         // Time Input components
         Label timeLabel = new Label("Time:");
         TextField timeField = new TextField();
-        timeField.setPromptText("e.g. 14:30");
+        timeField.setPromptText("e.g. 14:00");
 
         // Room Selection components
         Label roomLabel = new Label("Room Code:");

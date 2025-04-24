@@ -172,7 +172,7 @@ public class DisplayLectureView extends Stage implements ClientView {
                 String eventColor = moduleColors.get(module);
 
                 VBox eventBox = createEventBox(lecture, eventColor);
-                grid.getChildren().removeIf(node ->
+                grid.getChildren().removeIf(node -> 
                         GridPane.getColumnIndex(node) == dayColumn && GridPane.getRowIndex(node) == row);
                 grid.add(eventBox, dayColumn, row);
             } catch (Exception e) {
@@ -182,9 +182,11 @@ public class DisplayLectureView extends Stage implements ClientView {
     }
 
     private VBox createEventBox(Lecture lecture, String eventColor) {
-        VBox eventBox = new VBox(3);
+        VBox eventBox = new VBox(1);           // reduced vertical spacing
         eventBox.setStyle("-fx-background-color: " + eventColor + "; " +
-                "-fx-border-color: black; -fx-border-width: 1; -fx-padding: 5; " +
+                "-fx-border-radius: 8; -fx-background-radius: 8;" +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0, 1, 1);" +
+                "-fx-padding: 4;" +               // reduced padding
                 "-fx-alignment: center;");
 
         eventBox.getChildren().addAll(
@@ -193,13 +195,13 @@ public class DisplayLectureView extends Stage implements ClientView {
                 createStyledLabel(lecture.getRoomNumber(), "white", "normal")
         );
 
-        eventBox.setMinSize(120, 50);
+        eventBox.setMinHeight(60);   // increased minimum height for better spacing
+        eventBox.setMinSize(120, 60);
         GridPane.setFillWidth(eventBox, true);
         GridPane.setFillHeight(eventBox, true);
 
         eventBox.setOnMouseClicked(e -> {
             showLectureOptionsDialog(lecture);
-
         });
 
         return eventBox;
@@ -207,48 +209,48 @@ public class DisplayLectureView extends Stage implements ClientView {
 
     private Label createStyledLabel(String text, String textColor, String fontWeight) {
         Label label = new Label(text);
-        label.setStyle("-fx-text-fill: " + textColor + "; -fx-font-weight: " + fontWeight + "; -fx-padding: 3px;");
+        label.setWrapText(true);                               // allow wrapping
+        label.setMaxWidth(Double.MAX_VALUE);                   // fill available width
+        label.setStyle("-fx-text-fill: " + textColor + ";" +
+                "-fx-font-weight: " + fontWeight + ";" +
+                "-fx-padding: 2px;");
         label.setAlignment(Pos.CENTER);
-        label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         return label;
     }
 
     private void showLectureOptionsDialog(Lecture lecture) {
-    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-    alert.setTitle("Lecture Options");
-    alert.setHeaderText("Choose an option for this lecture:");
-    alert.setContentText(String.format("Module: %s\nDate: %s\nTime: %s\nRoom: %s",
-            lecture.getModuleName(), lecture.getDate(), lecture.getTime(), lecture.getRoomNumber()));
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Lecture Options");
+        alert.setHeaderText("Choose an option for this lecture:");
+        alert.setContentText(String.format("Module: %s\nDate: %s\nTime: %s\nRoom: %s",
+                lecture.getModuleName(), lecture.getDate(), lecture.getTime(), lecture.getRoomNumber()));
 
-    ButtonType removeButton = new ButtonType("Remove");
-    ButtonType rescheduleButton = new ButtonType("Reschedule");
-    ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType removeButton = new ButtonType("Remove");
+        ButtonType rescheduleButton = new ButtonType("Reschedule");
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 
-    alert.getButtonTypes().setAll(removeButton, rescheduleButton, cancelButton);
+        alert.getButtonTypes().setAll(removeButton, rescheduleButton, cancelButton);
 
-    Optional<ButtonType> result = alert.showAndWait();
+        Optional<ButtonType> result = alert.showAndWait();
 
-    if (result.isPresent()) {
-        if (result.get() == removeButton) {
-            String response = controller.handleRequest(
-                    "Remove",
-                    lecture.getDate(),
-                    lecture.getTime(),
-                    lecture.getRoomNumber(),
-                    lecture.getModuleName()
-            );
-            controller.updateResponseArea(response);
-            updateDisplay(LocalDate.parse(lecture.getDate()));
-
-        } else if (result.get() == rescheduleButton) {
-            // Call your reschedule logic here:
-            new RescheduleView(controller, lecture).show();
+        if (result.isPresent()) {
+            if (result.get() == removeButton) {
+                String response = controller.handleRequest(
+                        "Remove",
+                        lecture.getDate(),
+                        lecture.getTime(),
+                        lecture.getRoomNumber(),
+                        lecture.getModuleName()
+                );
+                controller.updateResponseArea(response);
+                updateDisplay(LocalDate.parse(lecture.getDate()));
+            } else if (result.get() == rescheduleButton) {
+                // Call your reschedule logic here:
+                new RescheduleView(controller, lecture).show();
+            }
+            // Cancel does nothing
         }
-        // Cancel does nothing
     }
-}
-
-    
 
     @Override
     public void updateResponseArea(String message) {
