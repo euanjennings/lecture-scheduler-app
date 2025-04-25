@@ -1,13 +1,10 @@
 package com.mycompany.server.service;
 
 import com.mycompany.server.controller.LectureController;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import javafx.concurrent.Task;
 
 public class LectureProcessingService {
     private final LectureController lectureController;
-    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public LectureProcessingService(LectureController lectureController) {
         this.lectureController = lectureController;
@@ -25,16 +22,32 @@ public class LectureProcessingService {
         return lectureController.getSchedule();
     }
 
-    public String processEarlyLectures() {
-        Future<String> future = executor.submit(() -> lectureController.shiftToEarlyLectures());
-        try {
-            return future.get();
-        } catch (Exception e) {
-            return "Error processing early lectures: " + e.getMessage();
-        }
+    // Synchronous processing of early lectures
+    public String shiftToEarlyLectures() {
+        return lectureController.shiftToEarlyLectures();  // Performs the shift and returns updated schedule
+    }
+
+    // Optional: still support background task, if needed elsewhere
+    public Task<String> processEarlyLectures() {
+        Task<String> task = new Task<>() {
+            @Override
+            protected String call() {
+                return lectureController.shiftToEarlyLectures();
+            }
+        };
+
+        task.setOnSucceeded(event -> {
+            System.out.println("Early lectures processed successfully!");
+        });
+
+        task.setOnFailed(event -> {
+            System.err.println("Error processing early lectures: " + task.getException().getMessage());
+        });
+
+        return task;
     }
 
     public void shutdown() {
-        executor.shutdown();
+       
     }
 }

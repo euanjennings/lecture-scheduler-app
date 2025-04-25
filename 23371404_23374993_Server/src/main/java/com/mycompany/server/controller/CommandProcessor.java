@@ -25,21 +25,21 @@ public class CommandProcessor {
                 case "Add":
                     if (parts.length < 5) throw new IncorrectActionException("Add requires 4 parameters");
                     return processingService.addLecture(parts[1], parts[2], parts[3], parts[4]);
-                
+
                 case "Remove":
                     if (parts.length < 5) throw new IncorrectActionException("Remove requires 4 parameters");
                     return processingService.removeLecture(parts[1], parts[2], parts[3], parts[4]);
-                
+
                 case "Display":
                     return processingService.getSchedule();
-                
+
                 case "Early":
-                    return processingService.processEarlyLectures();
-                
+                    return processingService.shiftToEarlyLectures();  // Now synchronous
+
                 case "STOP":
                     processingService.shutdown();
                     return "TERMINATE";
-                
+
                 default:
                     throw new IncorrectActionException("Invalid action: " + action);
             }
