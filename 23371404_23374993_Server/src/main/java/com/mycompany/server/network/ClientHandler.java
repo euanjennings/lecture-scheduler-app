@@ -2,6 +2,7 @@ package com.mycompany.server.network;
 
 import com.mycompany.server.controller.CommandProcessor;
 import com.mycompany.server.controller.LectureController;
+import com.mycompany.server.view.ServerApp;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,12 +13,14 @@ import java.net.Socket;
 public class ClientHandler implements Runnable {
     private final Socket clientSocket;
     private final CommandProcessor commandProcessor;
+    private final ServerApp serverApp;
     private BufferedReader in;
     private PrintWriter out;
 
-    public ClientHandler(Socket socket, LectureController controller) {
+    public ClientHandler(Socket socket, LectureController controller, ServerApp serverApp) {
         this.clientSocket = socket;
-        this.commandProcessor = new CommandProcessor(controller); // Injected
+        this.commandProcessor = new CommandProcessor(controller);
+        this.serverApp = serverApp;
     }
 
     @Override
@@ -28,22 +31,23 @@ public class ClientHandler implements Runnable {
 
             String clientMessage;
             while ((clientMessage = in.readLine()) != null) {
+                serverApp.appendRequestLog("Request from " + clientSocket.getInetAddress() + ": " + clientMessage);
+
                 String response = commandProcessor.processCommand(clientMessage);
                 out.println(response);
 
                 if ("TERMINATE".equals(response)) {
-                    System.out.println("Client requested termination.");
+                    serverApp.appendClientLog("Client disconnected: " + clientSocket.getInetAddress());
                     break;
                 }
             }
         } catch (IOException e) {
-            System.err.println("Client handler error: " + e.getMessage());
+            serverApp.appendClientLog("Client handler error: " + e.getMessage());
         } finally {
             try {
-                System.out.println("Closing client connection...");
                 clientSocket.close();
             } catch (IOException e) {
-                System.err.println("Error closing client socket: " + e.getMessage());
+                serverApp.appendClientLog("Error closing client socket: " + e.getMessage());
             }
         }
     }
