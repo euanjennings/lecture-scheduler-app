@@ -7,9 +7,10 @@ import com.mycompany.client.view.AddLectureView;
 import com.mycompany.client.view.RemoveLectureView;
 import com.mycompany.client.view.DisplayLectureView;
 
+import javafx.collections.ObservableList;
+
 import java.time.LocalDate;
 import java.util.List;
-import javafx.collections.ObservableList;
 
 public class LectureController {
     private final ClientMainView mainView;
@@ -75,5 +76,15 @@ public class LectureController {
     public void requestEarlyShift() {
         String response = handleRequest("Early", "", "", "", "");
         mainView.updateResponseArea(response);
+    }
+
+    public void refreshSchedule() {
+        String response = model.sendRequest("Display", "", "", "", "");
+        List<Lecture> lectures = model.getLectures(response);
+        mainView.displayLectures(lectures);
+    }
+
+    public ObservableList<String> getRoomList() {
+        return roomList;
     }
 }

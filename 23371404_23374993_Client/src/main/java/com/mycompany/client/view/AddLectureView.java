@@ -1,8 +1,8 @@
 package com.mycompany.client.view;
 
 import com.mycompany.client.controller.LectureController;
-import java.time.LocalDate;
 import javafx.collections.ObservableList;
+import java.time.LocalDate;
 
 public class AddLectureView extends AbstractLectureFormView {
 

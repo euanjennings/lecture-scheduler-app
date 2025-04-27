@@ -3,6 +3,7 @@ package com.mycompany.server.view;
 import com.mycompany.server.controller.LectureController;
 import com.mycompany.server.model.ScheduleManager;
 import com.mycompany.server.network.ClientHandler;
+import com.mycompany.server.controller.LectureProcessingService;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -20,11 +21,13 @@ public class ServerApp extends Application {
     private TextArea requestsArea;
     private ScheduleManager scheduleManager;
     private LectureController controller;
+    private LectureProcessingService processingService;
 
     @Override
     public void start(Stage primaryStage) {
         scheduleManager = new ScheduleManager();
         controller = new LectureController(scheduleManager);
+        processingService = new LectureProcessingService(controller);
 
         // GUI Setup
         clientsArea = new TextArea();
@@ -55,7 +58,7 @@ public class ServerApp extends Application {
                 String clientInfo = clientSocket.getInetAddress().toString();
                 appendClientLog("Client connected: " + clientInfo);
 
-                ClientHandler handler = new ClientHandler(clientSocket, controller, this);
+                ClientHandler handler = new ClientHandler(clientSocket, controller, processingService);
                 new Thread(handler).start();
             }
         } catch (IOException e) {

@@ -18,14 +18,19 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class DisplayLectureView extends Stage implements ClientView {
+    private static DisplayLectureView currentInstance; // Ensure only one window is open
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final LectureController controller;
     private GridPane grid;
     private DatePicker datePicker;
 
     public DisplayLectureView(LectureController controller) {
+        if (currentInstance != null) {
+            currentInstance.close();
+        }
+        currentInstance = this;
+
         this.controller = controller;
-        
         setupUI();
         updateDisplay(LocalDate.now());
     }
@@ -162,7 +167,7 @@ public class DisplayLectureView extends Stage implements ClientView {
                     case "FRIDAY": dayColumn = 5; break;
                     default: dayColumn = -1; break;
                 }
-                
+
                 if (dayColumn == -1) continue;
 
                 int row = startHour - 8;
@@ -182,9 +187,11 @@ public class DisplayLectureView extends Stage implements ClientView {
     }
 
     private VBox createEventBox(Lecture lecture, String eventColor) {
-        VBox eventBox = new VBox(3);
+        VBox eventBox = new VBox(1);
         eventBox.setStyle("-fx-background-color: " + eventColor + "; " +
-                "-fx-border-color: black; -fx-border-width: 1; -fx-padding: 5; " +
+                "-fx-border-radius: 8; -fx-background-radius: 8;" +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0, 1, 1);" +
+                "-fx-padding: 4;" +
                 "-fx-alignment: center;");
 
         eventBox.getChildren().addAll(
@@ -193,13 +200,46 @@ public class DisplayLectureView extends Stage implements ClientView {
                 createStyledLabel(lecture.getRoomNumber(), "white", "normal")
         );
 
-        eventBox.setMinSize(120, 50);
+        eventBox.setMinHeight(60);
+        eventBox.setMinSize(120, 60);
         GridPane.setFillWidth(eventBox, true);
         GridPane.setFillHeight(eventBox, true);
 
         eventBox.setOnMouseClicked(e -> {
-            boolean confirmed = showConfirmationDialog(lecture);
-            if (confirmed) {
+            showLectureOptionsDialog(lecture);
+        });
+
+        return eventBox;
+    }
+
+    private Label createStyledLabel(String text, String textColor, String fontWeight) {
+        Label label = new Label(text);
+        label.setWrapText(true);
+        label.setMaxWidth(Double.MAX_VALUE);
+        label.setStyle("-fx-text-fill: " + textColor + ";" +
+                "-fx-font-weight: " + fontWeight + ";" +
+                "-fx-padding: 2px;");
+        label.setAlignment(Pos.CENTER);
+        return label;
+    }
+
+    private void showLectureOptionsDialog(Lecture lecture) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Lecture Options");
+        alert.setHeaderText("Choose an option for this lecture:");
+        alert.setContentText(String.format("Module: %s\nDate: %s\nTime: %s\nRoom: %s",
+                lecture.getModuleName(), lecture.getDate(), lecture.getTime(), lecture.getRoomNumber()));
+
+        ButtonType removeButton = new ButtonType("Remove");
+        ButtonType rescheduleButton = new ButtonType("Reschedule");
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        alert.getButtonTypes().setAll(removeButton, rescheduleButton, cancelButton);
+
+        Optional<ButtonType> result = alert.showAndWait();
+
+        if (result.isPresent()) {
+            if (result.get() == removeButton) {
                 String response = controller.handleRequest(
                         "Remove",
                         lecture.getDate(),
@@ -209,28 +249,10 @@ public class DisplayLectureView extends Stage implements ClientView {
                 );
                 controller.updateResponseArea(response);
                 updateDisplay(LocalDate.parse(lecture.getDate()));
+            } else if (result.get() == rescheduleButton) {
+                new RescheduleLectureView(controller, lecture).show();
             }
-        });
-
-        return eventBox;
-    }
-
-    private Label createStyledLabel(String text, String textColor, String fontWeight) {
-        Label label = new Label(text);
-        label.setStyle("-fx-text-fill: " + textColor + "; -fx-font-weight: " + fontWeight + "; -fx-padding: 3px;");
-        label.setAlignment(Pos.CENTER);
-        label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        return label;
-    }
-
-    private boolean showConfirmationDialog(Lecture lecture) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Remove Lecture");
-        alert.setHeaderText("Are you sure you want to remove this lecture?");
-        alert.setContentText(String.format("Module: %s\nDate: %s\nTime: %s\nRoom: %s",
-                lecture.getModuleName(), lecture.getDate(), lecture.getTime(), lecture.getRoomNumber()));
-
-        return alert.showAndWait().filter(response -> response == ButtonType.OK).isPresent();
+        }
     }
 
     @Override
@@ -241,5 +263,6 @@ public class DisplayLectureView extends Stage implements ClientView {
     @Override
     public void close() {
         super.close();
+        currentInstance = null;
     }
 }

@@ -2,7 +2,8 @@ package com.mycompany.server.network;
 
 import com.mycompany.server.controller.CommandProcessor;
 import com.mycompany.server.controller.LectureController;
-import com.mycompany.server.view.ServerApp;
+import com.mycompany.server.controller.LectureProcessingService;
+import javafx.concurrent.Task;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,14 +14,14 @@ import java.net.Socket;
 public class ClientHandler implements Runnable {
     private final Socket clientSocket;
     private final CommandProcessor commandProcessor;
-    private final ServerApp serverApp;
+    private final LectureProcessingService lectureProcessingService;
     private BufferedReader in;
     private PrintWriter out;
 
-    public ClientHandler(Socket socket, LectureController controller, ServerApp serverApp) {
+    public ClientHandler(Socket socket, LectureController controller, LectureProcessingService service) {
         this.clientSocket = socket;
         this.commandProcessor = new CommandProcessor(controller);
-        this.serverApp = serverApp;
+        this.lectureProcessingService = service;
     }
 
     @Override
@@ -31,23 +32,45 @@ public class ClientHandler implements Runnable {
 
             String clientMessage;
             while ((clientMessage = in.readLine()) != null) {
-                serverApp.appendRequestLog("Request from " + clientSocket.getInetAddress() + ": " + clientMessage);
+                System.out.println("Received: " + clientMessage);
 
-                String response = commandProcessor.processCommand(clientMessage);
-                out.println(response);
+                String[] parts = clientMessage.split(",");
+                String action = parts[0].trim();
 
-                if ("TERMINATE".equals(response)) {
-                    serverApp.appendClientLog("Client disconnected: " + clientSocket.getInetAddress());
-                    break;
+                if ("Early".equalsIgnoreCase(action)) {
+                    System.out.println("Starting background early lectures task...");
+
+                    Task<String> earlyTask = lectureProcessingService.processEarlyLectures();
+
+                    earlyTask.setOnSucceeded(event -> {
+                        String result = earlyTask.getValue();
+                        out.println(result);
+                    });
+
+                    earlyTask.setOnFailed(event -> {
+                        out.println("ERROR: Failed to process early lectures.");
+                    });
+
+                    new Thread(earlyTask).start();
+                } else {
+                    String response = commandProcessor.processCommand(clientMessage);
+                    out.println(response);
+
+                    if ("TERMINATE".equals(response)) {
+                        System.out.println("Client requested termination.");
+                        break;
+                    }
                 }
             }
         } catch (IOException e) {
-            serverApp.appendClientLog("Client handler error: " + e.getMessage());
+            System.err.println("Client handler error: " + e.getMessage());
         } finally {
             try {
-                clientSocket.close();
+                try (clientSocket) {
+                    System.out.println("Closing client connection...");
+                }
             } catch (IOException e) {
-                serverApp.appendClientLog("Error closing client socket: " + e.getMessage());
+                System.err.println("Error closing client socket: " + e.getMessage());
             }
         }
     }

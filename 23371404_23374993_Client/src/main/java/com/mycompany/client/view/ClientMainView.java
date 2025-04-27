@@ -2,27 +2,33 @@ package com.mycompany.client.view;
 
 import com.mycompany.client.controller.LectureController;
 import com.mycompany.client.model.LectureModel;
+import com.mycompany.client.model.Lecture;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.List;
 
 public class ClientMainView extends Application implements ClientView {
     private LectureController controller;
     private TextArea responseArea;
     private Socket socket;
+    private GridPane calendarGrid;
 
     private final ObservableList<String> roomList = FXCollections.observableArrayList(
-        Arrays.asList("A0049", "A0050", "A0060A", "A0060B", "A0060C", "A1050", "A1051", "A1052", "A1053", "A1054", "A1055",
+        Arrays.asList(
+            "A0049", "A0050", "A0060A", "A0060B", "A0060C", "A1050", "A1051", "A1052", "A1053", "A1054", "A1055",
                       "A1089", "A1090", "A1095", "A2005", "A2011", "A2012", "A3009", "A3009A", "AD0034", "AD2010", "AM038", "AM061",
                       "B0005", "B0006", "B0010", "B0013", "B0027", "B0029", "B0030", "B1005", "B1005A", "B1023", "B2005", "B2006",
                       "B2011", "B2041", "B2043", "B3005", "B3022", "B3053", "BM015", "BM037", "C0043", "C0052", "C0078", "C0079",
@@ -40,7 +46,8 @@ public class ClientMainView extends Application implements ClientView {
                       "S206", "S207", "SG15", "SG16", "SG17", "SG18", "SG19", "SG20", "SG21", "SG21A", "SR1014A", "SR1014B", "SR1017",
                       "SR1020", "SR2027", "SR2028", "SR2029", "SR2030", "SR2031", "SR2032", "SR2044", "SR2046", "SR2047", "SR2057",
                       "SR2058", "SR2064", "SR2065", "SR2071", "SR3004A", "SR3004B", "SR3005A", "SR3005B", "SR3006", "SR3007", "SR3008",
-                      "SR4111")
+                      "SR4111"
+        )
     );
 
     @Override
@@ -56,33 +63,66 @@ public class ClientMainView extends Application implements ClientView {
     }
 
     private void setupUI(Stage primaryStage) {
-        Button addButton = new Button("Add");
-        Button removeButton = new Button("Remove");
-        Button displayButton = new Button("Display");
-        Button earlyButton = new Button("Early Lectures");
-        Button otherButton = new Button("Other");
-        Button stopButton = new Button("Stop");
+        // Create and style buttons
+        Button addButton     = new Button("＋ Add");
+        Button removeButton  = new Button("– Remove");
+        Button displayButton = new Button("🔄 Display");
+        Button earlyButton   = new Button("⏰ Early");
+        Button otherButton   = new Button("… Other");
+        Button stopButton    = new Button("■ Stop");
 
-        responseArea = new TextArea();
-        responseArea.setEditable(false);
-
-        VBox mainLayout = new VBox(10);
-        mainLayout.getChildren().addAll(
-            addButton, removeButton, displayButton, earlyButton,
-            otherButton, stopButton, responseArea
+        List<Button> buttons = List.of(
+            addButton, removeButton, displayButton,
+            earlyButton, otherButton, stopButton
         );
+        for (Button b : buttons) {
+            b.setStyle(
+                "-fx-background-radius: 4; " +
+                "-fx-padding: 6 12; " +
+                "-fx-font-size: 13px; " +
+                "-fx-cursor: hand;"
+            );
+        }
 
         addButton.setOnAction(e -> controller.openAddView());
         removeButton.setOnAction(e -> controller.openRemoveView());
         displayButton.setOnAction(e -> controller.openDisplayView());
         earlyButton.setOnAction(e -> controller.requestEarlyShift());
-        otherButton.setOnAction(e -> controller.handleRequest("Something", "", "", "", ""));
+        otherButton.setOnAction(e -> controller.handleRequest("Other", "", "", "", ""));
         stopButton.setOnAction(e -> controller.handleRequest("STOP", "", "", "", ""));
 
-        Scene mainScene = new Scene(mainLayout, 600, 400);
-        primaryStage.setScene(mainScene);
+        // Calendar grid
+        calendarGrid = new GridPane();
+        calendarGrid.setHgap(10);
+        calendarGrid.setVgap(10);
+        calendarGrid.setPadding(new Insets(10));
+        calendarGrid.setStyle("-fx-background-color: white; -fx-border-color: #ddd;");
+
+        // Response area
+        responseArea = new TextArea();
+        responseArea.setEditable(false);
+        responseArea.setPrefRowCount(8);
+        responseArea.setStyle("-fx-font-family: monospace; -fx-font-size: 12px;");
+
+        // Main layout
+        VBox mainLayout = new VBox(10,
+            addButton, removeButton, displayButton,
+            earlyButton, otherButton, stopButton,
+            calendarGrid, responseArea
+        );
+        mainLayout.setPadding(new Insets(10));
+        mainLayout.setStyle("-fx-background-color: #f9f9f9;");
+
+        Scene scene = new Scene(mainLayout, 600, 500);
+        primaryStage.setScene(scene);
         primaryStage.setTitle("Lecture Scheduler Client");
         primaryStage.show();
+    }
+
+    public void displayLectures(List<Lecture> lectures) {
+        // Open display window for lectures
+        DisplayLectureView displayView = new DisplayLectureView(controller);
+        displayView.show();
     }
 
     @Override
@@ -102,7 +142,7 @@ public class ClientMainView extends Application implements ClientView {
     }
 
     @Override
-    public void show() {}
+    public void show() { /* no-op */ }
 
     public static void main(String[] args) {
         launch(args);
